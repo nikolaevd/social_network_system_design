@@ -1,0 +1,413 @@
+openapi: 3.0.2
+servers:
+  - url: /v1
+info:
+  title: REST API для социальной сети ВКонтакте
+  version: '1.0.1'
+paths:
+  /link/{userId}:
+    post:
+      tags:
+        - Friends
+      summary: Добавить пользователя в друзья
+      operationId: addFriend
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Зашифрованный идентификатор пользователя
+          schema:
+            type: string
+            format: uuid
+            example: '2cf42280-f997-4797-a876-fc4c79c88ddc'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: BAD_REQUEST
+        '500':
+          description: UNKNOWN_EXCEPTION
+    delete:
+      tags:
+        - Friends
+      summary: Удалить пользователя из друзей
+      operationId: deleteFriend
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Зашифрованный идентификатор пользователя
+          schema:
+            type: string
+            format: uuid
+            example: '2cf42280-f997-4797-a876-fc4c79c88ddc'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: BAD_REQUEST
+        '500':
+          description: UNKNOWN_EXCEPTION
+  /{userId}/friends:
+    get:
+      tags:
+        - Friends
+      summary: Просмотр друзей пользователя
+      operationId: getFriends
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Зашифрованный идентификатор пользователя
+          schema:
+            type: string
+            format: uuid
+            example: '2cf42280-f997-4797-a876-fc4c79c88ddc'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  '$ref': '#/components/schemas/UserCard'
+        '400':
+          description: BAD_REQUEST
+        '500':
+          description: UNKNOWN_EXCEPTION
+  /{userId}/profile:
+    get:
+      tags:
+        - Friends
+      summary: Просмотр анкеты пользователя
+      operationId: getProfile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Зашифрованный идентификатор пользователя
+          schema:
+            type: string
+            format: uuid
+            example: '2cf42280-f997-4797-a876-fc4c79c88ddc'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/Profile'
+        '400':
+          description: BAD_REQUEST
+        '500':
+          description: UNKNOWN_EXCEPTION
+  /upload:
+    post:
+      tags:
+        - Media
+      summary: Загрузка медиафайла
+      operationId: postMedia
+      requestBody:
+        required: true
+        content:
+          application / octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/UploadData'
+        '400':
+          description: BAD_REQUEST
+        '500':
+          description: UNKNOWN_EXCEPTION
+  /posts:
+    get:
+      tags:
+        - Messages
+      summary: Просмотр ленты постов (домашней и пользователей)
+      operationId: getPosts
+      parameters:
+        - name: onlyOwn
+          in: query
+          required: false
+          description: Если true - получить только собственные посты
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  '$ref': '#/components/schemas/Post'
+        '400':
+          description: BAD_REQUEST
+        '500':
+          description: UNKNOWN_EXCEPTION
+  /chats:
+    get:
+      tags:
+        - Messages
+      summary: Получение списка диалогов и чатов
+      operationId: getChats
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  '$ref': '#/components/schemas/ChatView'
+        '400':
+          description: BAD_REQUEST
+        '500':
+          description: UNKNOWN_EXCEPTION
+  /chat/{id}:
+    get:
+      tags:
+        - Messages
+      summary: Получение списка сообщений чата
+      operationId: getMessages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Зашифрованный идентификатор чата
+          schema:
+            type: string
+            format: uuid
+            example: '2cf42280-f997-4797-a876-fc4c79c88ddc'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  '$ref': '#/components/schemas/Message'
+        '400':
+          description: BAD_REQUEST
+        '500':
+          description: UNKNOWN_EXCEPTION
+    post:
+      tags:
+        - Messages
+      summary: Отправка сообщения в чат или в ленту постов
+      operationId: sendMessage
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Зашифрованный идентификатор чата или ленты постов
+          schema:
+            type: string
+            format: uuid
+            example: '2cf42280-f997-4797-a876-fc4c79c88ddc'
+      requestBody:
+        description: Данные поста
+        required: true
+        content:
+          application/json:
+            schema:
+              '$ref': '#/components/schemas/ShortMessage'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: BAD_REQUEST
+        '500':
+          description: UNKNOWN_EXCEPTION
+components:
+  schemas:
+    UserCard:
+      x-swagger-router-model: io.swagger.vk.model.UserCard
+      required:
+        - id
+        - name
+        - avatar_url
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Зашифрованный идентификатор пользователя
+          example: 2cf42280-f997-4797-a876-fc4c79c88ddc
+        name:
+          type: string
+          description: ФИО пользователя
+          example: Иванов Иван Иванович
+        avatar_url:
+          type: string
+          format: uri
+          description: Ссылка на аватар пользователя
+          example: https://vk.com/resource/pic.jpg
+      type: object
+    Profile:
+      x-swagger-router-model: io.swagger.vk.model.Profile
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Зашифрованный идентификатор пользователя
+          example: 2cf42280-f997-4797-a876-fc4c79c88ddc
+        name:
+          type: string
+          description: ФИО пользователя
+          example: Иванов Иван Иванович
+        birthDate:
+          type: string
+          format: date
+          description: Дата рождения
+        hobby:
+          type: string
+          description: Увлечения
+          example: Нумизматика
+        relationship:
+          type: string
+          description: Состоит ли в отношениях
+          enum:
+            - single
+            - have_couple
+            - in_search
+          example: single
+        avatar_url:
+          type: string
+          format: uri
+          description: Ссылка на аватар пользователя
+          example: https://vk.com/resource/pic.jpg
+      type: object
+    Post:
+      x-swagger-router-model: io.swagger.vk.model.Post
+      required:
+        - name
+        - text
+        - send_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Зашифрованный идентификатор сообщения
+          example: 2cf42280-f997-4797-a876-fc4c79c88ddc
+        name:
+          type: string
+          description: Имя автора сообщения
+          example: Петухов Петр Эдуардович
+        text:
+          type: string
+          description: Текст сообщения
+          example: Hello World
+        send_at:
+          type: string
+          format: date-time
+          description: Время отправки сообщения
+        avatar_url:
+          type: string
+          format: uri
+          description: Ссылка на аватар пользователя
+          example: https://vk.com/resource/pic.jpg
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uuid
+            description: Зашифрованные идентификаторы вложений (медиафайлы)
+            example: 2cf42280-f997-4797-a876-fc4c79c88ddc
+      type: object
+    Message:
+      x-swagger-router-model: io.swagger.vk.model.Message
+      required:
+        - name
+        - text
+        - was_readed
+        - send_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Зашифрованный идентификатор сообщения
+          example: 2cf42280-f997-4797-a876-fc4c79c88ddc
+        name:
+          type: string
+          description: Имя автора сообщения
+          example: Петухов Петр Эдуардович
+        text:
+          type: string
+          description: Текст сообщения
+          example: Hello World
+        was_readed:
+          type: boolean
+          description: Признак прочитанности сообщения
+          example: true
+        send_at:
+          type: string
+          format: date-time
+          description: Время отправки сообщения
+        avatar_url:
+          type: string
+          format: uri
+          description: Ссылка на аватар пользователя
+          example: https://vk.com/resource/pic.jpg
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uuid
+            description: Зашифрованные идентификаторы вложений (медиафайлы)
+            example: 2cf42280-f997-4797-a876-fc4c79c88ddc
+      type: object
+    ShortMessage:
+      x-swagger-router-model: io.swagger.vk.model.ShortMessage
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: Текст сообщения
+          example: Hello World
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uuid
+            description: Зашифрованные идентификаторы вложений (медиафайлы)
+            example: 2cf42280-f997-4797-a876-fc4c79c88ddc
+      type: object
+    ChatView:
+      x-swagger-router-model: io.swagger.vk.model.ChatView
+      required:
+        - text
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Зашифрованный идентификатор чата
+          example: 2cf42280-f997-4797-a876-fc4c79c88ddc
+        avatar_url:
+          type: string
+          format: uri
+          description: Ссылка на аватар чата
+          example: https://vk.com/resource/pic.jpg
+      type: object
+    UploadData:
+      x-swagger-router-model: io.swagger.vk.model.UploadData
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Зашифрованный идентификатор загруженного файла
+          example: 2cf42280-f997-4797-a876-fc4c79c88ddc
+      type: object
