@@ -1,3 +1,10 @@
+// Replication:
+// - master-slave (sync, strong consistency)
+// - replication factor 4
+
+// Sharding:
+// - hash-based by profiles.id
+
 Table profiles {
   id uuid [pk]
   name varchar [not null]
